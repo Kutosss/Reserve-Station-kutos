@@ -249,10 +249,12 @@ namespace Content.Client.Entry
             _prototypeManager.RegisterIgnore("story"); //Reserve edit
             _prototypeManager.RegisterIgnore("storyBeat"); //Reserve edit
 
+            // WD EDIT START
             // Vision effects
             _componentFactory.RegisterIgnore("UltraVisionComponent");
             _componentFactory.RegisterIgnore("DogVisionComponent");
             _componentFactory.RegisterIgnore("CRTVisionComponent");
+            // WD EDIT END
 
             _componentFactory.GenerateNetIds();
             _adminManager.Initialize();
