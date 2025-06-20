@@ -1,5 +1,4 @@
 using Content.Shared._White.Overlays;
-using Content.Shared.CCVar;
 using Content.Shared.Damage;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
@@ -7,7 +6,6 @@ using Content.Shared.Mobs.Systems;
 using Content.Shared.Stunnable;
 using Content.Shared.Weapons.Melee.Events;
 using Robust.Client.Graphics;
-using Robust.Shared.Configuration;
 using Robust.Shared.Player;
 
 namespace Content.Client._White.Overlays;
@@ -16,7 +14,6 @@ namespace Content.Client._White.Overlays;
 public sealed class CRTVisionSystem : EntitySystem
 {
     [Dependency] private readonly IOverlayManager _overlayMan = default!;
-    [Dependency] private readonly IConfigurationManager _cfg = default!;
     [Dependency] private readonly ISharedPlayerManager _playerMan = default!;
     [Dependency] private readonly IEntityManager _entityManager = default!;
 
@@ -24,12 +21,6 @@ public sealed class CRTVisionSystem : EntitySystem
 
     // For health tracking
     private float _healthPercentage = 1.0f;
-
-    // For studio visor
-    private const float StudioVisorGlitchReduction = 0.7f; // Reduce glitch intensity by 70% with studio visor
-    private const float StudioVisorLowHealthThreshold = 0.3f;
-
-    private bool _noVisionFilters;
 
     public override void Initialize()
     {
@@ -41,10 +32,6 @@ public sealed class CRTVisionSystem : EntitySystem
         SubscribeLocalEvent<CRTVisionOverlayComponent, ComponentShutdown>(OnComponentChange);
         SubscribeLocalEvent<CRTVisionOverlayComponent, LocalPlayerAttachedEvent>(OnPlayerStateChange);
         SubscribeLocalEvent<CRTVisionOverlayComponent, LocalPlayerDetachedEvent>(OnPlayerStateChange);
-
-        // Subscribe to studio visor events
-        SubscribeLocalEvent<StudioVisorOverlayComponent, ComponentInit>(OnComponentChange);
-        SubscribeLocalEvent<StudioVisorOverlayComponent, ComponentShutdown>(OnComponentChange);
 
         // Subscribe to damage events
         SubscribeLocalEvent<CRTVisionOverlayComponent, DamageChangedEvent>(OnDamageChanged);
@@ -58,15 +45,6 @@ public sealed class CRTVisionSystem : EntitySystem
         // Subscribe to attack and stun events
         SubscribeLocalEvent<CRTVisionOverlayComponent, AttackedEvent>(OnAttacked);
         SubscribeLocalEvent<CRTVisionOverlayComponent, StunnedEvent>(OnStunned);
-
-        Subs.CVar(
-            _cfg,
-            CCVars.NoVisionFilters,
-            v =>
-        {
-            _noVisionFilters = v;
-            UpdateOverlayState();
-        });
     }
 
     private void OnComponentChange<T>(EntityUid uid, T component, EntityEventArgs args) where T: IComponent
@@ -91,22 +69,9 @@ public sealed class CRTVisionSystem : EntitySystem
 
         UpdateHealthPercentage(player.Value);
 
-        var hasStudioVisor = _entityManager.HasComponent<StudioVisorOverlayComponent>(player.Value);
 
-        // The overlay is active if filters are enabled, and the user either doesn't have a studio visor,
-        // or has one but is at low health.
-        var shouldShowOverlay = !_noVisionFilters && (!hasStudioVisor || _healthPercentage < StudioVisorLowHealthThreshold);
-
-        if (shouldShowOverlay)
-        {
-            if (!_overlayMan.HasOverlay<CRTVisionOverlay>())
-                _overlayMan.AddOverlay(_overlay);
-        }
-        else
-        {
-            if (_overlayMan.HasOverlay<CRTVisionOverlay>())
-                _overlayMan.RemoveOverlay(_overlay);
-        }
+        if (!_overlayMan.HasOverlay<CRTVisionOverlay>())
+            _overlayMan.AddOverlay(_overlay);
     }
 
     // Process damage event
@@ -205,13 +170,8 @@ public sealed class CRTVisionSystem : EntitySystem
         if (player == null)
             return;
 
-        // Reduce impact effect intensity if player has studio visor
-        var effectiveIntensity = intensity;
-        if (_entityManager.HasComponent<StudioVisorOverlayComponent>(player.Value))
-            effectiveIntensity *= (1.0f - StudioVisorGlitchReduction);
-
         // Trigger a temporary glitch effect proportional to damage
-        var glitchIntensity = Math.Min(effectiveIntensity / 50.0f, 1.0f);
+        var glitchIntensity = Math.Min(intensity / 50.0f, 1.0f);
         _overlay.SetTemporaryGlitchEffect(glitchIntensity * 0.8f, 0.4f);
     }
 }

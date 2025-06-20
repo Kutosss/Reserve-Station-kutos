@@ -44,7 +44,7 @@
   id: BorgChassisSelectable
   parent: BaseBorgChassisNT
   components:
-  - type: CRTVision
+  - type: CRTVisionOverlay
   - type: Sprite
     layers:
     - state: robot

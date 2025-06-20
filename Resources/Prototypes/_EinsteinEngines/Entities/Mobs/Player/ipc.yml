@@ -22,6 +22,7 @@
   name: Urist McPositronic
   description: A positronic brain in a metal body.
   components:
+  - type: CRTVisionOverlay
   - type: HarpySinger
     ShutUpDamageThreshold: 5 # Punch does 5 damage
   - type: Instrument
