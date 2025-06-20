@@ -1,9 +1,3 @@
-// SPDX-FileCopyrightText: 2025 Kutosss <162154227+Kutosss@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2025 ReserveBot <211949879+ReserveBot@users.noreply.github.com>
-// SPDX-FileCopyrightText: 2025 Spatison <137375981+Spatison@users.noreply.github.com>
-//
-// SPDX-License-Identifier: AGPL-3.0-or-later
-
 using Content.Shared._White.Overlays;
 using Content.Shared.Damage;
 using Content.Shared.Mobs;
@@ -27,6 +21,25 @@ public sealed class CRTVisionSystem : EntitySystem
 
     // For health tracking
     private float _healthPercentage = 1.0f;
+
+    // Reserve edit start - magic numbers have been converted to constants
+    // Constants for glitch effects
+    private const float DamageGlitchIntensityFactor = 0.016f; // 0.8f / 50.0f
+    private const float DamageGlitchDuration = 0.4f;
+
+    // Constants for different types of effects
+    private const float CriticalStateGlitchIntensity = 1.5f;
+    private const float CriticalStateGlitchDuration = 0.5f;
+
+    private const float ThresholdGlitchIntensity = 0.5f;
+    private const float ThresholdGlitchDuration = 0.3f;
+
+    private const float AttackGlitchIntensity = 0.5f;
+    private const float AttackGlitchDuration = 0.35f;
+
+    private const float StunGlitchIntensity = 0.7f;
+    private const float StunGlitchDuration = 0.4f;
+    // Reserve edit end
 
     public override void Initialize()
     {
@@ -128,7 +141,7 @@ public sealed class CRTVisionSystem : EntitySystem
 
         // Trigger a strong glitch effect when entering critical state
         if (args.NewMobState == MobState.Critical)
-            _overlay.SetTemporaryGlitchEffect(1.5f, 0.5f);
+            _overlay.SetTemporaryGlitchEffect(CriticalStateGlitchIntensity, CriticalStateGlitchDuration); // Reserve edit
 
         // Update health percentage for glitch effects
         UpdateOverlayState();
@@ -144,7 +157,7 @@ public sealed class CRTVisionSystem : EntitySystem
         TriggerImpactEffect(15.0f);
 
         // When crossing a new threshold, trigger a medium glitch effect
-        _overlay.SetTemporaryGlitchEffect(0.5f, 0.3f);
+        _overlay.SetTemporaryGlitchEffect(ThresholdGlitchIntensity, ThresholdGlitchDuration); // Reserve edit
 
         // Update health percentage for glitch effects
         UpdateOverlayState();
@@ -157,7 +170,7 @@ public sealed class CRTVisionSystem : EntitySystem
             return;
 
         // Trigger a small glitch effect on every attack
-        _overlay.SetTemporaryGlitchEffect(0.2f, 0.2f);
+        _overlay.SetTemporaryGlitchEffect(AttackGlitchIntensity, AttackGlitchDuration); // Reserve edit
     }
 
     // Handle stun event
@@ -167,7 +180,7 @@ public sealed class CRTVisionSystem : EntitySystem
             return;
 
         // Trigger a medium glitch effect on stun
-        _overlay.SetTemporaryGlitchEffect(0.7f, 0.4f);
+        _overlay.SetTemporaryGlitchEffect(StunGlitchIntensity, StunGlitchDuration); // Reserve edit
     }
 
     private void TriggerImpactEffect(float intensity)
@@ -177,7 +190,7 @@ public sealed class CRTVisionSystem : EntitySystem
             return;
 
         // Trigger a temporary glitch effect proportional to damage
-        var glitchIntensity = Math.Min(intensity / 50.0f, 1.0f);
-        _overlay.SetTemporaryGlitchEffect(glitchIntensity * 0.8f, 0.4f);
+        var glitchIntensity = Math.Min(intensity * DamageGlitchIntensityFactor, 1.0f); // Reserve edit
+        _overlay.SetTemporaryGlitchEffect(glitchIntensity, DamageGlitchDuration); // Reserve edit
     }
 }

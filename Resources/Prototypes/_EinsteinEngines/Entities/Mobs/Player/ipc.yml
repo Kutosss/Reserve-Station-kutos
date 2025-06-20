@@ -105,6 +105,7 @@
     stateAlertDict:
       Alive: BorgHealth
       Dead: BorgDead
+    showOverlays: false # WWDP add
   - type: TypingIndicator
     proto: robot
   - type: Destructible
